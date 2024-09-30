@@ -6,9 +6,9 @@ import cv2
 import numpy as np
 import yaml
 import keyboard
-from enum import Enum
 from threading import Thread
 from setting import *
+import logging
 
 
 # 查找窗口句柄
@@ -127,6 +127,7 @@ def check_current_UI():
     :return:
     """
     global current_state, size
+    start_button = cv2.imread(START_FISH_BUTTON_PATH)
     huaner = cv2.imread(HUANER_IMAGE_PATH)
     use_button = cv2.imread(USE_BUTTON_PATH)
     time_icon = cv2.imread(TIME_IMAGE_PATH)
@@ -139,76 +140,88 @@ def check_current_UI():
     while True:
         current_img = get_screenshot(size, is_save=False, save_path=current_UI_path)
         if current_state == fish_state.DEFAULT:
-            if is_match_template_by_img(current_img, huaner, threshold=0.8):
-                print("当前状态: ", current_state)
+            if is_match_template_by_img(current_img, start_button, threshold=0.8):
+                logging.info("开始钓鱼界面，状态不变")
+                continue
+            elif is_match_template_by_img(current_img, huaner, threshold=0.8):
+                logging.info(f"当前状态: {current_state} 转换到抛竿状态")
                 current_state = fish_state.PAO_GAN
             elif is_match_template_by_img(current_img, use_button, threshold=0.8):
-                print("当前状态: ", current_state)
+                logging.info(f"当前状态: {current_state} 转换到鱼饵不足状态")
                 current_state = fish_state.NO_YUER
             elif is_match_template_by_img(current_img, again_button, threshold=0.7):
-                print("当前状态: ", current_state)
+                logging.info(f"当前状态: {current_state} 转换到结束钓鱼状态")
                 current_state = fish_state.END_FISHING
             if keyboard.is_pressed('esc'):
+                logging.info(f"当前状态: {current_state} 转换到退出状态, 退出原因: 按下esc")
                 current_state = fish_state.EXIT
             continue
         elif current_state == fish_state.PAO_GAN:
-            try:
-                if is_match_template_by_img(current_img, use_button, threshold=0.8):
-                    print("当前状态: ", current_state, "转换到鱼饵不足状态")
-                    current_state = fish_state.NO_YUER
-                elif is_match_template_by_img(current_img, time_icon, threshold=0.8):
-                    print("当前状态: ", current_state, "转换到叉鱼状态")
-                    current_state = fish_state.BU_YU
-                elif is_match_template_by_img(current_img, buy_button, threshold=0.8):
-                    print("当前状态: ", current_state, "转换到终止程序状态")
-                    current_state = fish_state.EXIT
-                if keyboard.is_pressed('esc'):
-                    current_state = fish_state.EXIT
-                continue
-            except Exception as e:
-                print("出现异常", e)
+            if is_match_template_by_img(current_img, use_button, threshold=0.8):
+                logging.info(f"当前状态: {current_state} 转换到鱼饵不足状态")
+                current_state = fish_state.NO_YUER
+            elif is_match_template_by_img(current_img, time_icon, threshold=0.8):
+                logging.info(f"当前状态: {current_state} 转换到开始钓鱼状态")
+                current_state = fish_state.BU_YU
+            elif is_match_template_by_img(current_img, buy_button, threshold=0.8):
+                logging.info(f"当前状态: {current_state} 转换到退出状态, 退出原因: 鱼饵不足")
+                current_state = fish_state.EXIT
+            if keyboard.is_pressed('esc'):
+                logging.info(f"当前状态: {current_state} 转换到退出状态, 退出原因: 按下esc")
+                current_state = fish_state.EXIT
+            continue
         elif current_state == fish_state.NO_YUER:
             if not is_match_template_by_img(current_img, use_button, threshold=0.8):
-                print("当前状态: ", current_state, "转换到抛竿状态")
+                logging.info(f"当前状态: {current_state} 转换到抛竿状态")
                 current_state = fish_state.PAO_GAN
             if keyboard.is_pressed('esc'):
+                logging.info(f"当前状态: {current_state} 转换到退出状态, 退出原因: 按下esc")
                 current_state = fish_state.EXIT
             continue
         elif current_state == fish_state.BU_YU:
             if is_match_template_by_img(current_img, push_gan_button, threshold=0.8):
-                print("当前状态: ", current_state)
+                logging.info(f"当前状态: {current_state} 转换到开始钓鱼状态")
                 current_state = fish_state.START_FISHING
+            elif is_match_template_by_img(current_img, again_button, threshold=0.8):
+                logging.info(f"当前状态: {current_state} 转换到结束钓鱼状态")
+                current_state = fish_state.END_FISHING
             if keyboard.is_pressed('esc'):
+                logging.info(f"当前状态: {current_state} 转换到退出状态, 退出原因: 按下esc")
                 current_state = fish_state.EXIT
             continue
         elif current_state == fish_state.START_FISHING:
             if is_match_template_by_img(current_img, again_button, threshold=0.8):
-                print("当前状态: ", current_state)
+                logging.info(f"当前状态: {current_state} 转换到结束钓鱼状态")
                 current_state = fish_state.END_FISHING
             elif is_match_template_by_img(current_img, up_button, threshold=0.8):
+                logging.info(f"当前状态: {current_state} 转换到秒杀状态")
                 current_state = fish_state.MIAO_SHA
             if keyboard.is_pressed('esc'):
+                logging.info(f"当前状态: {current_state} 转换到退出状态, 退出原因: 按下esc")
                 current_state = fish_state.EXIT
             continue
         elif current_state == fish_state.END_FISHING:
             if is_match_template_by_img(current_img, huaner, threshold=0.8):
-                print("当前状态: ", current_state)
+                logging.info(f"当前状态: {current_state} 转换到抛竿状态")
                 current_state = fish_state.PAO_GAN
             if keyboard.is_pressed('esc'):
+                logging.info(f"当前状态: {current_state} 转换到退出状态, 退出原因: 按下esc")
                 current_state = fish_state.EXIT
             continue
         elif current_state == fish_state.MIAO_SHA:
             if is_match_template_by_img(current_img, again_button, threshold=0.8):
-                print("当前状态: ", current_state)
+                logging.info(f"当前状态: {current_state} 转换到结束钓鱼状态")
                 current_state = fish_state.END_FISHING
+            elif is_match_template_by_img(current_img, push_gan_button, threshold=0.8):
+                logging.info(f"当前状态: {current_state} 转换到继续钓鱼状态")
+                current_state = fish_state.START_FISHING
             if keyboard.is_pressed('esc'):
+                logging.info(f"当前状态: {current_state} 转换到退出状态, 退出原因: 按下esc")
                 current_state = fish_state.EXIT
             continue
         elif current_state == fish_state.EXIT:
-            print("钓鱼结束")
+            logging.info("钓鱼结束")
             break
-        else:
-            print("我不知道状态该是什么", current_state)
 
 
 def fenlei_all_pos(point_list):
@@ -269,13 +282,15 @@ def main():
 
     start_fishing_pos = config_dic.get('start_fishing_pos', None)
     lagan_pos = config_dic.get('lagan_pos', None)
+    guogao_pos = config_dic.get('guogao_pos', None)
+    guogao_color = config_dic.get('guogao_color', None)
     orgin_lagan_color = config_dic.get('orgin_lagan_color', None)
     dir_icon_pos_list = config_dic.get('dir_icon_pos_list', None)
     again_icon_center = config_dic.get('again_icon_center', None)
     shougan_time = 0
     shougan_interval = config_dic.get('shougan_interval', 20)
     write_dict(config_dic, 'shougan_interval', shougan_interval)
-    wait_time = config_dic.get('wait_time', 0.075)
+    wait_time = config_dic.get('wait_time', 0.065)
     write_dict(config_dic, 'wait_time', wait_time)
     dir_icon_path_list = [UP_IMAGE_PATH, DOWN_IMAGE_PATH, LEFT_IMAGE_PATH,
                           RIGHT_IMAGE_PATH, WIND_IMAGE_PATH, FIRE_IMAGE_PATH,
@@ -290,30 +305,29 @@ def main():
     first_miao_sha = True
     while True:
         if current_state == fish_state.DEFAULT and start_fishing_first_click:
-            print("进入默认状态")
+            logging.info("进入默认状态")
             if start_fishing_pos is None:
                 start_fishing_UI_path = os.path.join(IMAGE_FOLDER, "start_fishing_UI.png")
                 start_fishing_UI_img = get_screenshot(size, is_save=False, save_path=start_fishing_UI_path)
-                start_fishing_button_path = os.path.join(IMAGE_FOLDER, "start_fish.png")
-                start_fishing_button_img = cv2.imread(start_fishing_button_path)
+                start_fishing_button_img = cv2.imread(START_FISH_BUTTON_PATH)
                 start_fishing_pos = match_template_by_img(start_fishing_UI_img, start_fishing_button_img, is_save=False,
                                                           save_name="start_fishing_pos.png", save_path=RESULTS_FOLDER)
                 start_fishing_pos = (start_fishing_pos[0] + size[0], start_fishing_pos[1] + size[1])
                 write_dict(config_dic, 'start_fishing_pos', start_fishing_pos)
                 write_yaml(config_dic, CONFIG_FILE)
-                print("开始钓鱼按钮位置: ", start_fishing_pos)
+                logging.info(f"""开始钓鱼按钮位置: {start_fishing_pos}""")
             pyautogui.click(start_fishing_pos)
             start_fishing_first_click = False
             continue
         elif current_state == fish_state.PAO_GAN and first_paogan:
-            print("进入抛竿状态")
+            logging.info("进入抛竿状态")
             # 模拟点击拉杆
             press_mouse_move(start_x=start_fishing_pos[0], start_y=start_fishing_pos[1], x=0, y=-100, button='left')
             first_paogan = False
             first_again = True
             continue
         elif current_state == fish_state.NO_YUER and first_huner:
-            print("进入鱼饵不足状态")
+            logging.info("进入鱼饵不足状态")
             use_button_path = os.path.join(IMAGE_FOLDER, "use_button.png")
             huaner_UI_path = os.path.join(IMAGE_FOLDER, "huaner_UI.png")
             huaner_UI_img = get_screenshot(size, is_save=False, save_path=huaner_UI_path)
@@ -326,30 +340,36 @@ def main():
             first_paogan = True
             continue
         elif current_state == fish_state.BU_YU and first_buyu:
-            print("进入叉鱼状态")
+            logging.info("进入叉鱼状态")
             pyautogui.click(start_fishing_pos)
             first_buyu = False
             continue
         elif current_state == fish_state.START_FISHING:
-            print("进入开始钓鱼状态")
+            logging.info("进入开始钓鱼状态")
             if lagan_pos is None:
-                push_gan_icon_path = os.path.join(IMAGE_FOLDER, "push_gan_button.png")
                 shotscreen_path = os.path.join(IMAGE_FOLDER, "fishing_shotscreen.png")
                 fishing_shotscreen_img = get_screenshot(size, is_save=False, save_path=shotscreen_path)
-                push_gan_icon_img = cv2.imread(push_gan_icon_path)
+                push_gan_icon_img = cv2.imread(PUSH_GAN_BUTTON_PATH)
+                guogao_img = cv2.imread(GUOGAO_IMAGE_PATH)
                 lagan_pos = match_template_by_img(fishing_shotscreen_img, push_gan_icon_img, is_save=False,
                                                   save_name="push_gan_icon.png", save_path=RESULTS_FOLDER)
-
+                guogao_pos = match_template_by_img(fishing_shotscreen_img, guogao_img, is_save=False,
+                                                   save_name="guogao_icon.png", save_path=RESULTS_FOLDER)
                 lagan_pos = (lagan_pos[0] + size[0], lagan_pos[1] + size[1])
+                guogao_pos = (guogao_pos[0] + size[0], guogao_pos[1] + size[1])
+                guogao_color = pyautogui.pixel(guogao_pos[0], guogao_pos[1])
                 write_dict(config_dic, 'lagan_pos', lagan_pos)
-                print("拉杆位置: ", lagan_pos)
+                write_dict(config_dic, 'guogao_pos', guogao_pos)
+                write_dict(config_dic, 'guogao_color', guogao_color)
+                logging.info(f"拉杆位置: {lagan_pos},过高位置: {guogao_pos}, 过高颜色: {guogao_color}")
                 orgin_lagan_color = pyautogui.pixel(lagan_pos[0], lagan_pos[1])
                 write_dict(config_dic, 'orgin_lagan_color', orgin_lagan_color)
-                print("拉杆颜色: ", orgin_lagan_color)
+                logging.info(f"拉杆颜色: {orgin_lagan_color}""")
                 write_yaml(config_dic, CONFIG_FILE)
+
             # 第一次进入钓鱼界面，模拟一段时间长按
             if first_diaoyu:
-                print("第一次进入钓鱼界面，模拟长按")
+                logging.info("第一次进入钓鱼界面，模拟长按")
                 shougan_time = time.time()
                 # 模拟长按一段时间
                 pyautogui.mouseDown(start_fishing_pos, button='left')
@@ -358,21 +378,29 @@ def main():
                 first_diaoyu = False
             else:
                 now_lagan_color = pyautogui.pixel(lagan_pos[0], lagan_pos[1])
+                now_guogao_color = pyautogui.pixel(guogao_pos[0], guogao_pos[1])
                 if now_lagan_color != config_dic['orgin_lagan_color']:
-                    print("拉杆颜色改变，尝试左右移动拉杆")
+                    logging.info("拉杆颜色改变，尝试左右移动拉杆")
                     press_mouse_move(start_x=lagan_pos[0], start_y=lagan_pos[1], x=100, y=0, button='left')
                     press_mouse_move(start_x=lagan_pos[0], start_y=lagan_pos[1], x=-100, y=0, button='left')
+                if now_guogao_color != config_dic['guogao_color']:
+                    wait_time = 0.8
+                    config_dic['wait_time'] = wait_time
+                else:
+                    wait_time = 0.01
+                    config_dic['wait_time'] = wait_time
                 if time.time() - shougan_time > shougan_interval:
-                    print("可以收杆了")
+                    logging.info("可以收杆了")
                     press_mouse_move(start_x=start_fishing_pos[0], start_y=start_fishing_pos[1], x=0, y=-75,
                                      button='left')
                     shougan_time = time.time()
                 pyautogui.click(start_fishing_pos, button='left')
+                logging.info(f"当前等待时间: {wait_time}")
                 time.sleep(wait_time)
             # 开始钓鱼
             continue
         elif current_state == fish_state.END_FISHING and first_again:
-            print("进入结束钓鱼状态")
+            logging.info("进入结束钓鱼状态")
             # 结束钓鱼
             if again_icon_center is None:
                 agian_icon_path = os.path.join(IMAGE_FOLDER, "again_button.png")
@@ -384,7 +412,7 @@ def main():
                 again_icon_center = (again_icon_center[0] + size[0], again_icon_center[1] + size[1])
                 write_dict(config_dic, 'again_icon_center', again_icon_center)
                 write_yaml(config_dic, CONFIG_FILE)
-                print("点击再次钓鱼位置: ", again_icon_center)
+                logging.info(f"点击再次钓鱼按钮位置: {again_icon_center}")
 
             pyautogui.click(again_icon_center)
             first_again = False
@@ -406,7 +434,7 @@ def main():
                 dir_icon_pos_list = {}
 
                 for dir_icon_path in dir_icon_path_list:
-                    print("当前方向图标：", dir_icon_path)
+                    logging.info(f"当前方向图标路径: {dir_icon_path}")
                     dir_icon = cv2.imread(dir_icon_path)
                     dir_icon_pos = match_template_by_img(half_buttom_img, dir_icon, is_save=False,
                                                          save_name=os.path.basename(dir_icon_path),
@@ -414,7 +442,7 @@ def main():
                     dir_icon_pos = (dir_icon_pos[0] + half_buttom_size[0], dir_icon_pos[1] + half_buttom_size[1])
                     name = os.path.basename(dir_icon_path).split('.')[0]
                     dir_icon_pos_list[name] = dir_icon_pos
-                    print(name, "位置: ", dir_icon_pos)
+                    logging.info(f"{name} 方向图标位置: {dir_icon_pos}""")
                 write_dict(config_dic, 'dir_icon_pos_list', dir_icon_pos_list)
                 write_yaml(config_dic, CONFIG_FILE)
             all_icon_dic = {}
@@ -434,16 +462,20 @@ def main():
             # 排序，从左到右
             all_icon_list = sorted(all_icon_dic.items(), key=lambda x: x[0][0])
             for pos, name in all_icon_list:
-                print(name, "位置: ", pos)
+                logging.info(f"{name}, 位置: {pos}")
                 click_pos = dir_icon_pos_list[name]
                 pyautogui.click(click_pos)
             continue
         elif current_state == fish_state.EXIT:
-            print("没有鱼饵可以钓，退出程序")
+            write_yaml(config_dic, CONFIG_FILE)
+            logging.info("退出程序")
             break
         else:
             continue
 
 
 if __name__ == '__main__':
-    main()
+    try:
+        main()
+    except Exception as e:
+        logging.error(e)
