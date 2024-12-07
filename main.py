@@ -126,7 +126,7 @@ def check_current_UI():
     5.如果是史诗以上的鱼，还有秒杀界面,对应:01_up.png
     :return:
     """
-    global current_state, size
+    global current_state, size,current_img
     start_button = cv2.imread(START_FISH_BUTTON_PATH)
     huaner = cv2.imread(HUANER_IMAGE_PATH)
     use_button = cv2.imread(USE_BUTTON_PATH)
@@ -267,7 +267,7 @@ def handle_window(config_dic):
 
 
 def main():
-    global current_state, size
+    global current_state, size,current_img
     t1 = Thread(target=check_current_UI)
     t1.start()
     # 都是配置文件里面读取出来的变量
@@ -288,7 +288,7 @@ def main():
     dir_icon_pos_list = config_dic.get('dir_icon_pos_list', None)
     again_icon_center = config_dic.get('again_icon_center', None)
     shougan_time = 0
-    shougan_interval = config_dic.get('shougan_interval', 20)
+    shougan_interval = config_dic.get('shougan_interval', 15)
     write_dict(config_dic, 'shougan_interval', shougan_interval)
     wait_time = config_dic.get('wait_time', 0.065)
     write_dict(config_dic, 'wait_time', wait_time)
@@ -373,7 +373,7 @@ def main():
                 shougan_time = time.time()
                 # 模拟长按一段时间
                 pyautogui.mouseDown(start_fishing_pos, button='left')
-                time.sleep(1.7)
+                time.sleep(2.3)
                 pyautogui.mouseUp(button='left')
                 first_diaoyu = False
             else:
@@ -384,7 +384,7 @@ def main():
                     press_mouse_move(start_x=lagan_pos[0], start_y=lagan_pos[1], x=100, y=0, button='left')
                     press_mouse_move(start_x=lagan_pos[0], start_y=lagan_pos[1], x=-100, y=0, button='left')
                 if now_guogao_color != config_dic['guogao_color']:
-                    wait_time = 0.8
+                    wait_time = 0.1
                     config_dic['wait_time'] = wait_time
                 else:
                     wait_time = 0.01
