@@ -258,6 +258,7 @@ def handle_window(config_dic):
         window_title = "MuMu模拟器12"
         write_dict(config_dic, 'window_title', window_title)
         write_yaml(config_dic, CONFIG_FILE)
+        exit("请设置窗口标题")
     # 示例：查找记事本窗口
     hWnd = find_window(window_title)
     if hWnd:
@@ -268,8 +269,7 @@ def handle_window(config_dic):
 
 def main():
     global current_state, size,current_img
-    t1 = Thread(target=check_current_UI)
-    t1.start()
+
     # 都是配置文件里面读取出来的变量
     size = WINDOW_SIZE
     if not os.path.exists(CONFIG_FILE):
@@ -303,6 +303,9 @@ def main():
     first_diaoyu = True
     first_again = True
     first_miao_sha = True
+    # 开启一个线程，检查当前状态
+    t1 = Thread(target=check_current_UI)
+    t1.start()
     while True:
         if current_state == fish_state.DEFAULT and start_fishing_first_click:
             logging.info("进入默认状态")
@@ -373,7 +376,7 @@ def main():
                 shougan_time = time.time()
                 # 模拟长按一段时间
                 pyautogui.mouseDown(start_fishing_pos, button='left')
-                time.sleep(2.3)
+                time.sleep(2)
                 pyautogui.mouseUp(button='left')
                 first_diaoyu = False
             else:
@@ -384,7 +387,7 @@ def main():
                     press_mouse_move(start_x=lagan_pos[0], start_y=lagan_pos[1], x=100, y=0, button='left')
                     press_mouse_move(start_x=lagan_pos[0], start_y=lagan_pos[1], x=-100, y=0, button='left')
                 if now_guogao_color != config_dic['guogao_color']:
-                    wait_time = 0.1
+                    wait_time = 0.2
                     config_dic['wait_time'] = wait_time
                 else:
                     wait_time = 0.01
@@ -449,11 +452,11 @@ def main():
             half_top_icon_path = os.path.join(IMAGE_FOLDER, "half_top_icon.png")
             half_top_size = (size[0], size[1], size[2], (size[3] + size[1]) // 2)
             half_top_img = get_screenshot(half_top_size, is_save=False,
-                                          save_path=os.path.join(IMAGE_FOLDER, "half_top_screenshot.png"))
+                                          save_path=half_top_icon_path)
             for dir_icon_path in dir_icon_path_list:
                 dir_icon = cv2.imread(dir_icon_path)
                 res = cv2.matchTemplate(half_top_img, dir_icon, cv2.TM_CCOEFF_NORMED)
-                res_loc = np.where(res >= 0.9)
+                res_loc = np.where(res >= 0.8)
                 if len(res_loc[0]) > 0:
                     points = list(zip(*res_loc[::-1]))
                     res_points = fenlei_all_pos(points)
@@ -463,6 +466,7 @@ def main():
             all_icon_list = sorted(all_icon_dic.items(), key=lambda x: x[0][0])
             for pos, name in all_icon_list:
                 logging.info(f"{name}, 位置: {pos}")
+                print(f"{name}, 位置: {pos}")
                 click_pos = dir_icon_pos_list[name]
                 pyautogui.click(click_pos)
             continue
