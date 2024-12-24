@@ -20,19 +20,19 @@ pip3 install -r requirements.txt
 
 3.**生成配置文件**: 运行 `main.py` 文件，在项目同级目录下会生成 `config.yaml` 配置文件。
 
-只有两个默认参数，模拟器大小和模拟器名称，模拟器窗口大小不用管，窗口标题需要自己修改，改成你使用的模拟器名称，比如我使用的模拟器是MuMu模拟器12,![](https://github.com/KeNanXiaoLin/sgsminigame/blob/main/images/description_images/MuMu.png)
+只有两个默认参数，模拟器大小和模拟器名称，模拟器窗口大小不用管，窗口标题需要自己修改，改成你使用的模拟器名称，比如我使用的模拟器是MuMu模拟器12,![image](https://github.com/KeNanXiaoLin/sgsminigame/blob/main/images/description_images/MuMu.png)
 
 名称就是MuMu模拟器12，如果是雷电模拟器，就改名就行了。名称一定要写对，不然找不到你的模拟器窗口。
 
 4.**运行脚本**: 在模拟器中打开三国杀阿超钓鱼界面，运行 `main.py` 文件即可开始自动钓鱼。
 
-![](https://github.com/KeNanXiaoLin/sgsminigame/blob/main/images/description_images/diaoyu.png)
+![image](https://github.com/KeNanXiaoLin/sgsminigame/blob/main/images/description_images/diaoyu.png)
 
 就是这个界面，然后就可以再次运行main.py就可以了。
 
 **配置文件中的参数说明**:
 
-![](https://github.com/KeNanXiaoLin/sgsminigame/blob/main/images/description_images/parameters.png)
+![image](https://github.com/KeNanXiaoLin/sgsminigame/blob/main/images/description_images/parameters.png)
 
 
 
